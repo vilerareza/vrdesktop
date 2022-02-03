@@ -1,0 +1,36 @@
+#: import maintabs maintabs
+
+<Manager>:
+    orientation : 'vertical'
+    headerBar : header_layout
+    mainTabs : main_tabs 
+
+    FloatLayout:    # Header Bar
+        id : header_layout
+        tabStrip : tab_strip
+        size_hint : (1, None)
+        height : dp(35)
+        canvas.before :
+            Color : 
+                rgb : (0,0,0)
+            Rectangle :
+                size : self.size
+                pos : self.pos
+
+        Image : 
+            id : logo_image
+            source : 'images/vs_logo2.png'
+            pos_hint : {'left': 1, 'top': 1}
+            size_hint : (None, 1)
+            width : dp(130)
+
+        TabbedPanelStrip:
+            id : tab_strip
+            rows : 1
+            tabbed_panel : main_tabs
+            size_hint : (None, 1)
+            width : dp (130)
+            pos_hint : {'right': 0.99, 'top' : 1}
+
+    MainTabs:      # App Content Tabs
+        id : main_tabs

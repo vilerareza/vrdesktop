@@ -1,0 +1,25 @@
+#: import settingview settingview
+#: import multiview multiview
+
+<MainTabs>:
+
+    #multiView : id_multiview
+    #settingView : id_settingview
+    #tabMultiView :  id_tab_multi_view
+    #tabSettingView : id_tab_setting_view
+
+    do_default_tab : False
+    
+    #TabbedPanelItem:
+    #    id : id_tab_setting_view
+    #    text : ''
+    #    on_press : root.tabSettingViewPressed(self)
+    #    SettingView:
+    #        id : id_settingview
+            
+    #TabbedPanelItem:
+    #    id : id_tab_multi_view
+    #    text : ''
+    #    on_press : root.refreshMultiView(self)
+    #    Multiview:
+    #        id : id_multiview
