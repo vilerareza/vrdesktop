@@ -38,6 +38,13 @@ class Manager(BoxLayout):
                 newTab.background_normal = 'images/tab_multiview_normal.png'
                 newTab.background_down = 'images/tab_multiview_down.png'
                 self.headerBar.tabStrip.add_widget(newTab)
+            elif newTab == self.mainTabs.tabDatabaseView: 
+                # New database tab
+                newTab.size_hint = (None, None)
+                newTab.size = (dp(60), dp(40))
+                newTab.background_normal = 'images/tab_database_normal.png'
+                newTab.background_down = 'images/tab_database_down.png'
+                self.headerBar.tabStrip.add_widget(newTab)
 
     def stop(self):
         self.mainTabs.stop()

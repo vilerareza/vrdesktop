@@ -69,7 +69,7 @@ class AudioTransmitter():
     # Audio sampling freq
     fs = 44100
 
-    def __init__(self, deviceUrl, devicePort = 65001) -> None:
+    def __init__(self, deviceUrl, devicePort = 65002) -> None:
         self.stream = sd.InputStream(callback = self.stream_callback, samplerate = self.fs, channels = 1, blocksize=1024)
         self.deviceUrl = deviceUrl
         # Parsing ip address

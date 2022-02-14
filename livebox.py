@@ -1,20 +1,20 @@
+from functools import partial
+from threading import Thread
+
+from kivy.clock import Clock
 from kivy.lang import Builder
+from kivy.network.urlrequest import UrlRequest
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.uix.behaviors.hover_behavior import HoverBehavior
 from kivymd.uix.floatlayout import MDFloatLayout
-from kivy.clock import Clock
-from threading import Thread
-from kivy.network.urlrequest import UrlRequest
-from functools import partial
 
+from audioconnection import AudioReceiver, AudioTransmitter
 from mylayoutwidgets import ColorFloatLayout
-
-from audioconnection import AudioReceiver
 
 Builder.load_file('livebox.kv')
 
-class LiveBox(ColorFloatLayout, HoverBehavior):
+class LiveBox(MDFloatLayout, HoverBehavior):
 
     deviceUrl = ''
     liveStream = ObjectProperty(None)
@@ -33,6 +33,7 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
     servo_max_move = 1.7
     # Audio object
     audioReceiver = None
+    audioTransmitter = None
 
     def __init__(self, model = None, deviceUrl = '', **kwargs):
         super().__init__(**kwargs)
@@ -63,6 +64,11 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
             self.liveStream.state = "stop"
             self.liveStream.source = ""
             self.status = "stop"
+            # Stopping the audio stream anyway
+            self.stop_audio_in()
+            self.stop_audio_out()
+            # Reset the live action bar button state
+            self.liveActionBar.reset()
         except Exception as e:
             print ("Error to stop live stream...")
             print (e)
@@ -113,14 +119,14 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
                 print ('touch down up')
                 if not self.moveEvent:
                     args[0].source = 'images/moveup_down.png'
-                    self.move_up()    # move once
-                    self.moveEvent = Clock.schedule_interval(self.move_up, 0.3)
+                    self.start_move_up()    # move once
+                    self.moveEvent = Clock.schedule_interval(self.start_move_up, 0.3)
             if args[0] == self.moveDown:
                 print ('touch down down')
                 if not self.moveEvent:
                     args[0].source = 'images/movedown_down.png'
-                    self.move_down()    # move once
-                    self.moveEvent = Clock.schedule_interval(self.move_down, 0.3)
+                    self.start_move_down()    # move once
+                    self.moveEvent = Clock.schedule_interval(self.start_move_down, 0.3)
 
     def button_touch_up(self, *args):
         if args[0].collide_point(*args[1].pos):
@@ -147,11 +153,13 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
         print ('move right')
         req = UrlRequest(url=(self.deviceUrl+"?right="+str(distance)), timeout=1)
 
-    def move_up(self, *args):
+    def move_up(self, distance):
         print ('move up')
+        req = UrlRequest(url=(self.deviceUrl+"?up="+str(distance)), timeout=1)
 
-    def move_down(self, *args):
+    def move_down(self, distance):
         print ('move down')
+        req = UrlRequest(url=(self.deviceUrl+"?down="+str(distance)), timeout=1)
     
     def start_move_left(self, distance = 0.1, *args):
         # Start the move thread
@@ -161,6 +169,16 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
     def start_move_right(self, distance =0.1, *args):
         # Start the move thread
         moveThread = Thread(target = partial(self.move_right, distance))
+        moveThread.start()
+
+    def start_move_up(self, distance = 0.1, *args):
+        # Start the move thread
+        moveThread = Thread(target = partial(self.move_up, distance))
+        moveThread.start()
+  
+    def start_move_down(self, distance =0.1, *args):
+        # Start the move thread
+        moveThread = Thread(target = partial(self.move_down, distance))
         moveThread.start()
 
     def on_touch_down(self, touch):
@@ -176,21 +194,29 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
 
                 touchPos = (touch.pos[0]-self.liveStream.x, touch.pos[1]-self.liveStream.y)
                 # Calculate move distance
-                distance = self.calculate_move_distance(touch_x = touchPos[0])
+                distance_x, distance_y = self.calculate_move_distance(touch_x = touchPos[0], touch_y = touchPos[1])
 
-                if distance > 0.1:
+                if distance_x > 0.1:
                     # Touch is at left area
-                    self.start_move_left(abs(distance))
-                elif distance < -0.1:
+                    self.start_move_left(abs(distance_x))
+                elif distance_x < -0.1:
                     # Touch is at right area
-                    self.start_move_right(abs(distance))
+                    self.start_move_right(abs(distance_x))
 
-                #print (f'touch pos: {touchPos}')
+                if distance_y > 0.1:
+                    # Touch is at lower area
+                    self.start_move_down(abs(distance_y))
+                elif distance_y < -0.1:
+                    # Touch is at upper area
+                    self.start_move_up(abs(distance_y))
 
-    def calculate_move_distance(self, touch_x):
-        distance = (((self.liveStream.center_x-self.liveStream.x) - touch_x)/(self.liveStream.center_x-self.liveStream.x)) * self.servo_max_move
-        print (f'move distance: {distance}, center_x: {self.liveStream.center_x}, touch_x: {touch_x}')
-        return distance
+                print (f'touch pos: {touchPos}')
+
+    def calculate_move_distance(self, touch_x=0, touch_y=0):
+        distance_x = (((self.liveStream.center_x-self.liveStream.x) - touch_x)/(self.liveStream.center_x-self.liveStream.x)) * self.servo_max_move
+        distance_y = (((self.liveStream.center_y-self.liveStream.y) - touch_y)/(self.liveStream.center_y-self.liveStream.y)) * self.servo_max_move
+        #print (f'move distance: {distance}, center_x: {self.liveStream.center_x}, touch_x: {touch_x}')
+        return distance_x, distance_y
 
     def start_audio_in(self):
         # Start audio_in
@@ -199,12 +225,13 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
 
     def audio_in(self):
         print ('audio_in')
-        self.audioReceiver = AudioReceiver(self.deviceUrl)
+        self.audioReceiver = AudioReceiver(self.deviceUrl, devicePort = 65001)
         self.audioReceiver.start_stream()
 
     def stop_audio_in(self):
-        self.audioReceiver.stop_stream()
-        self.audioReceiver = None
+        if self.audioReceiver:
+            self.audioReceiver.stop_stream()
+            self.audioReceiver = None
 
     def start_audio_out(self):
         # Start audio_out
@@ -213,4 +240,10 @@ class LiveBox(ColorFloatLayout, HoverBehavior):
 
     def audio_out(self):
         print ('audio_out')
-        req = UrlRequest(url=(self.deviceUrl+"?audioout=1"), timeout=1)
+        self.audioTransmitter = AudioTransmitter(self.deviceUrl, devicePort = 65002)
+        self.audioTransmitter.start_stream()
+
+    def stop_audio_out(self):
+        if self.audioTransmitter:
+            self.audioTransmitter.stop_stream()
+            self.audioTransmitter = None

@@ -51,6 +51,9 @@ class Multiview(BoxLayout):
                     self.remove_live_box(deviceIcon)
             
     def show_live_box(self, deviceIcon):
+        if self.liveGrid.nLive == 0:
+            # Removing initLabel
+            self.liveGrid.hide_initlabel()
         # Start the live steaming object
         self.liveBoxes[self.deviceIcons.index(deviceIcon)].start_live_stream()                    
         # Adjust live grid row and cols for displaying live stream #
@@ -84,6 +87,9 @@ class Multiview(BoxLayout):
             # Adjust the livestream to the size of livebox
             self.adjust_livebox_size()
         print (f'ROWS : {self.liveGrid.rows} COLS : {self.liveGrid.cols}')
+        if self.liveGrid.nLive == 0:
+            # Showing initLabel
+            self.liveGrid.show_initlabel()
 
     def adjust_livebox_size(self, *args):
         cell_width = ((self.liveGrid.width - self.liveGrid.spacing[0]*(self.liveGrid.cols-1))/

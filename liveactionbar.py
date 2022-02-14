@@ -21,10 +21,6 @@ class LiveActionBar (GridLayout):
             button.source = 'images/capturenormal.png'
         if button == self.ids.movement_actionbar_icon:
             button.source = 'images/movement_normal.png'
-        if button == self.ids.speaker_icon_button:
-            button.source = 'images/speaker_normal.png'
-        if button == self.ids.speaker_icon_button:
-            button.source = 'images/speaker_normal.png'
 
     def button_touch_action(self, *args):
         if args[0].collide_point(*args[1].pos):
@@ -49,3 +45,9 @@ class LiveActionBar (GridLayout):
                     self.parent.start_audio_out()
             else:
                 button.source = 'images/mic_normal.png'
+                if self.parent:
+                    self.parent.stop_audio_out()
+    
+    def reset(self):
+        self.ids.speaker_icon_button.state = 'normal'
+        self.ids.speaker_icon_button.state = 'normal'

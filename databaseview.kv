@@ -1,0 +1,25 @@
+#: import databaseentrybox databaseentrybox
+#: import databaseinfobox databaseinfobox
+#: import databaselistbox databaselistbox
+
+<DatabaseView>:
+    orientation : 'vertical'
+        
+    BoxLayout:
+        size_hint : (1, 0.35)
+        id : top_container_box
+        orientation : 'horizontal'
+
+        DatabaseEntryBox:
+            id : database_entry_box
+
+
+    BoxLayout:
+        id: bottom_container_box
+        orientation: 'horizontal'
+
+        DatabaseListBox:
+            id : database_list_box
+        
+        DatabaseInfoBox:
+            id : database_info_box
