@@ -175,7 +175,7 @@
         right: image_view_box.right
         top: image_view_box.y - dp(2)
         on_press: root.button_press_callback(self)
-        on_release: root.button_release_callback(self)
+        on_release: root.button_release_callback(self), root.add_to_database(self)
     
     ImageButton:
         # Review cancel button

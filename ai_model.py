@@ -1,4 +1,3 @@
-from cv2 import CascadeClassifier
 from tensorflow.keras import models
 import numpy as np
 from openvino.inference_engine import IECore
@@ -8,22 +7,25 @@ import numpy as np
 
 class AIModel():
 
-    detector = None
+    detector1 = None
+    detector2 = None
     classifier = None
     classes = None
     modelLocation = '' #"E:/testimages/facetest/vggface/ir/saved_model.xml"
     ieModelProperties = []
 
     def __init__(self, recognition = False, ie = False, model_location = '', classes_location = ''):
-        # Face detector
-        #self.detector = CascadeClassifier("haarcascade_frontalface_default.xml")
-
+        
+        # Face detector 1 (haarcascade)
+        from cv2 import CascadeClassifier
+        self.detector1 = CascadeClassifier("haarcascade_frontalface_default.xml")
+        # Face detector 2 (mtcnn)
         from mtcnn.mtcnn import MTCNN
-        self.detector = MTCNN()
+        self.detector2 = MTCNN()
 
-        self.modelLocation = model_location
         # Classifier
         if recognition:
+            self.modelLocation = model_location
             if model_location != '':
                 if ie:
                     # Use intel inference engine
@@ -56,8 +58,14 @@ class AIModel():
         
         return model
     
-    def extract_face(self, image_path, target_size = (224,224)):
-        img, box = self.detect_face(image_path)
+    def extract_primary_face(self, detector_type, image_path, target_size = (224,224)):
+        # Check type of detector
+        if detector_type == 1:
+            detector = self.detector1
+        elif detector_type == 2:
+            detector = self.detector2
+
+        img, box = self.detect_primary_face(detector, image_path)
         if np.any(box):
             x1, y1, width, height = box
             x2, y2 = x1 + width, y1 + height
@@ -76,22 +84,42 @@ class AIModel():
             return face_resized
         return None
 
-    # def detect_face(self, image_path):
-    #     img = imread(image_path)
-    #     bboxes = self.detector.detectMultiScale(img)
-    #     if (len(bboxes)>0):
-    #         # Face detected
-    #         print ('Face detected')
-    #         box = bboxes[0]
-    #         return img, box
-    #     else:
-    #         return None
 
-    def detect_face(self, image_path):
+    def detect_primary_face(self, detector, image_path):
         img = imread(image_path)
-        detection = self.detector.detect_faces(img)
-        if (len(detection)>0):
-            box = detection[0]['box']
-            return img, box
+
+        if detector == self.detector1:
+            # Haarcascade detector perform here
+            img = imread(image_path)
+            bboxes = self.detector.detectMultiScale(img)
+            if (len(bboxes)>0):
+                # Face detected
+                print ('Detector 1: Face detected')
+                box = bboxes[0]
+                return img, box
+            else:
+                return img, None
+
+        elif detector == self.detector2:
+            # Haarcascade detector perform here
+            detection = detector.detect_faces(img)
+            if (len(detection)>0):
+                print ('Detector 2: Face detected')
+                box = detection[0]['box']
+                return img, box
+            else:
+                return img, None
+
+    def make_classifier(self, ie = False, model_location = ''):
+        self.modelLocation = model_location
+        if self.modelLocation != '':
+            if ie:
+                # Use intel inference engine
+                self.classifier = self.create_inference_engine(self.modelLocation)
+            else:
+                # Use regular tf / keras model
+                self.classifier = models.load_model(self.modelLocation)
+            return True
         else:
-            return img, None
+            print ('Model location is not set')
+            return False

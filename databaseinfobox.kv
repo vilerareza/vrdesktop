@@ -1,7 +1,174 @@
 <DatabaseInfoBox>
+    dataIDText: data_id_text
+    dataFirstNameText: data_firstname_text
+    dataLastNameText: data_lastname_text
+
+    orientation : 'vertical'
     canvas.before:
         Color:
-            rgb: 0.4, 0.4, 0.4
+            rgb: 0.35, 0.35, 0.35
         Rectangle:
             pos: self.pos
             size: self.size
+    
+    BoxLayout:
+        orientation : 'horizontal'
+        size_hint : (1, None)
+        height : dp(50)
+
+        FloatLayout:
+        # Container for title label and control buttons
+            id : header_float
+            size_hint : (1, None)
+            height : dp (40)
+
+            Label:
+                text: 'Data Content'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                x: header_float.x + dp(20)
+                top: header_float.top - dp(10)
+
+            ImageButton:
+                id : data_delete_button
+                source: 'images/databaseview/database_delete_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : header_float.y
+                right : data_edit_button.x - dp(30)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+            ImageButton:
+                id : data_edit_button
+                source: 'images/databaseview/database_new_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : header_float.y
+                right : header_float.right - dp(40)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+    BoxLayout:
+        size_hint : (1, 1)
+
+        FloatLayout:
+        # Container for data content
+            id : data_float
+            size_hint : (1, 1)
+
+            TextInput:
+                # Data ID field
+                id: data_id_text
+                size_hint: None, None
+                size: dp(220), dp(30)
+                foreground_color: (0.2, 0.2, 0.2)
+                background_color: (0.8, 0.8, 0.8)
+                multiline : False
+                font_size : 16
+                font_family : "arial"
+                center_x : data_float.center_x
+                top : data_id_label.y - dp(3)
+                disabled : True
+            
+            Label:
+                id : data_id_label
+                text: 'ID'
+                size_hint : (None, None)
+                size: dp(40), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 16
+                font_family: "arial"
+                x: data_id_text.x
+                top: data_float.top - dp(20)
+
+            Label:
+                id : data_firstname_label
+                text: 'First Name'
+                size_hint : (None, None)
+                size: dp(80), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 16
+                font_family: "arial"
+                x: data_id_text.x
+                top: data_id_text.y - dp(20)
+
+            TextInput:
+                # Data first name field
+                id: data_firstname_text
+                size_hint: None, None
+                size: dp(220), dp(30)
+                foreground_color: (0.2, 0.2, 0.2)
+                background_color: (0.8, 0.8, 0.8)
+                multiline : False
+                font_size : 16
+                font_family : "arial"
+                center_x : data_float.center_x
+                top : data_firstname_label.y - dp(3)
+                disabled : True
+
+            Label:
+                id : data_lastname_label
+                text: 'Last Name'
+                size_hint : (None, None)
+                size: dp(80), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 16
+                font_family: "arial"
+                x: data_id_text.x
+                top: data_firstname_text.y - dp(10)
+
+            TextInput:
+                # Data last name field
+                id: data_lastname_text
+                size_hint: None, None
+                size: dp(220), dp(30)
+                foreground_color: (0.2, 0.2, 0.2)
+                background_color: (0.8, 0.8, 0.8)
+                multiline : False
+                font_size : 16
+                font_family : "arial"
+                center_x : data_float.center_x
+                top : data_lastname_label.y - dp(3)
+                disabled : True
+
+    BoxLayout:
+        id : image_view_box
+        size_hint: (1, None)
+        height: dp(160)
+
+        FloatLayout:
+            size_hint: (1,1)
+
+            ScrollView:
+                id : image_scroll
+                do_scroll_y : False 
+                do_scroll_x : True
+                size_hint : (None, 1)
+                width : image_view_box.width if (data_image_grid.width > image_view_box.width) else (data_image_grid.width) 
+                bar_width : 3
+                bar_pos_x : 'top'
+                bar_color : (0.02, 0.4, 0.82, 0.7)
+                bar_inactive_color : (0.23, 0.73, 0.98, 0.4)
+                bar_margin : 0
+                pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+
+                GridLayout:
+                    id: data_image_grid
+                    rows: 1
+                    size_hint : (None, 1)
+                    pos_hint :  {'center_x': 0.5, 'center_y': 0.5}
+                    width : self.minimum_width
+                    spacing : 3
+                    padding : [3]

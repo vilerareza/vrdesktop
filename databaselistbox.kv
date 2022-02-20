@@ -1,7 +1,84 @@
 <DatabaseListBox>:
+    orientation: 'vertical'
+    databaseListLayout : database_list_layout 
     canvas.before:
         Color:
             rgb: 0.3, 0.3, 0.3
         Rectangle:
             pos: self.pos
             size: self.size
+    
+    BoxLayout:
+        # Container for title label and control buttons
+        id : header_box
+        orientation : 'horizontal'
+        size_hint : (1, None)
+        height : dp(50)
+
+        FloatLayout:
+            id : label_float
+            size_hint : (1, None)
+            height : dp (40)
+
+            Label:
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'left'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                text: 'Database'
+                x: label_float.x + dp(20)
+                top: label_float.top - dp(10)
+    
+        FloatLayout:
+            id : button_float
+            size_hint : (1, None)
+            height : dp (40)
+
+            ImageButton:
+                id : database_delete_button
+                source: 'images/databaseview/database_delete_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : button_float.y
+                right : database_new_button.x - dp(30)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+            ImageButton:
+                id : database_new_button
+                source: 'images/databaseview/database_new_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : button_float.y
+                right : database_load_button.x - dp(10)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self)
+
+            ImageButton:
+                id : database_load_button
+                source: 'images/databaseview/database_load_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : button_float.y
+                right : database_save_button.x - dp(10)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self), root.load_database()
+                
+            ImageButton:
+                id : database_save_button
+                source: 'images/databaseview/database_save_normal.png'
+                size_hint: (None, None)
+                size: (35, 35)
+                y : button_float.y
+                right : button_float.right - dp(20)
+                on_press : root.button_press_callback(self)
+                on_release : root.button_release_callback(self), root.save_database()
+                        
+    DatabaseListLayout:
+        # The layout for displaying the database content
+        id : database_list_layout
+        padding: [20]
+        spacing: 10
