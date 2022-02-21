@@ -58,15 +58,62 @@ class AIModel():
         
         return model
     
-    def extract_primary_face(self, detector_type, image_path, target_size = (224,224)):
+    def detect_faces(self, detector_type, img):
         # Check type of detector
         if detector_type == 1:
             detector = self.detector1
         elif detector_type == 2:
             detector = self.detector2
 
-        img, box = self.detect_primary_face(detector, image_path)
-        if np.any(box):
+        if detector == self.detector1:
+            # Haarcascade detector perform here
+            bboxes = detector.detectMultiScale(img)
+            if (len(bboxes)>0):
+                # Face detected
+                print ('Detector 1: Face detected')
+                return bboxes, img
+            else:
+                return [], img
+
+        elif detector == self.detector2:
+            # MTCNN detector perform here
+            detection = detector.detect_faces(img)
+            if (len(detection)>0):
+                print ('Detector 2: Face detected')
+                bboxes = []
+                for dict in detection:
+                    bboxes.append(dict['box'])
+                return bboxes, img
+            else:
+                return [], img
+
+    def extract_faces(self, detector_type, img, target_size = (224,224)):
+        # Detect faces and get bounding boxes
+        bboxes, img = self.detect_faces(detector_type, img)
+        if any(bboxes):
+            faces = []
+            for box in bboxes:
+                x1, y1, width, height = box
+                x2, y2 = x1 + width, y1 + height
+                # face data array
+                face = img[y1:y2, x1:x2]
+                # Resizing
+                factor_y = target_size[0] / face.shape[0]
+                factor_x = target_size[1] / face.shape[1]
+                factor = min (factor_x, factor_y)
+                face_resized = resize(face, (int(face.shape[0]* factor), int(face.shape[1]*factor)))
+                diff_y = target_size[0] - face_resized.shape[0]
+                diff_x = target_size[1] - face_resized.shape[1]
+                # Padding
+                face_resized = np.pad(face_resized,((diff_y//2, diff_y - diff_y//2), (diff_x//2, diff_x-diff_x//2), (0,0)), 'constant')
+                faces.append(face_resized)
+            return bboxes, faces
+        return [], []
+
+    def extract_primary_face(self, detector_type, image_path, target_size = (224,224)):
+        # Detection
+        img, box = self.detect_primary_face_from_file(detector_type, image_path)
+        if any(box):
             x1, y1, width, height = box
             x2, y2 = x1 + width, y1 + height
             # face data array
@@ -84,21 +131,26 @@ class AIModel():
             return face_resized
         return None
 
+    def detect_primary_face_from_file(self, detector_type, image_path):
+        # Check type of detector
+        if detector_type == 1:
+            detector = self.detector1
+        elif detector_type == 2:
+            detector = self.detector2
 
-    def detect_primary_face(self, detector, image_path):
         img = imread(image_path)
 
         if detector == self.detector1:
             # Haarcascade detector perform here
             img = imread(image_path)
-            bboxes = self.detector.detectMultiScale(img)
+            bboxes = detector.detectMultiScale(img)
             if (len(bboxes)>0):
                 # Face detected
                 print ('Detector 1: Face detected')
                 box = bboxes[0]
                 return img, box
             else:
-                return img, None
+                return img, []
 
         elif detector == self.detector2:
             # Haarcascade detector perform here
@@ -108,7 +160,43 @@ class AIModel():
                 box = detection[0]['box']
                 return img, box
             else:
-                return img, None
+                return img, []
+
+    def create_face_vectors(self, face_list):
+        # Create face vectors numpy array from list of face data
+        if self.classifier:
+            face_vectors = []
+            for face in face_list.copy():
+                face = np.expand_dims(face, axis=0)
+                face = face/255
+                # Predict vector
+                vector = self.classifier.predict(face)[0]
+                face_vectors.append(vector)
+            face_vectors = np.array(face_vectors)
+            return face_vectors
+        else:
+            print ('No classifier, face vector not created')
+            return []
+
+    def create_mean_face_vector(self, face_list):
+        # Create mean face vector numpy array from list of face data
+        if self.classifier:
+            face_vector = []
+            for face in face_list.copy():
+                face = np.expand_dims(face, axis=0)
+                face = face/255
+                #face = np.moveaxis(face, -1, 1)
+                print (f'face shape: {face.shape}')
+                # Predict vector
+                vector = self.classifier.predict(face)[0]
+                face_vector.append(vector)
+            face_vector = np.array(face_vector)
+            face_vector = np.mean(face_vector, axis = 0)
+            print (f'face_vector shape: {face_vector.shape}')
+            return face_vector
+        else:
+            print ('No classifier, mean face vector not created')
+            return []
 
     def make_classifier(self, ie = False, model_location = ''):
         self.modelLocation = model_location

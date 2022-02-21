@@ -133,7 +133,7 @@ class DatabaseEntryBox(FloatLayout):
             # Get list of face data
             self.newFaceData = self.create_face_data(self.selectedPath)
             # Create face vector
-            self.newFaceVector = self.create_face_vector(self.newFaceData, self.aiModel.classifier)
+            self.newFaceVector = self.aiModel.create_mean_face_vector(self.newFaceData)
             # Show face image to preview
             if self.create_face_image_file(self.newFaceData, self.previewImageLocation) and np.any(self.newFaceVector):
                 # Detection exist
@@ -187,22 +187,6 @@ class DatabaseEntryBox(FloatLayout):
         if len(os.listdir(save_location)) > 0:
             return True
         return False
-
-    def create_face_vector(self, face_list, classifier):
-        # Create mean face vector numpy array from list of face data
-        face_vector = []
-        for face in face_list.copy():
-            face = np.expand_dims(face, axis=0)
-            face = face/255
-            #face = np.moveaxis(face, -1, 1)
-            print (f'face shape: {face.shape}')
-            # Predict vector
-            vector = classifier.predict(face)[0]
-            face_vector.append(vector)
-        face_vector = np.array(face_vector)
-        face_vector = np.mean(face_vector, axis = 0)
-        print (f'face_vector shape: {face_vector.shape}')
-        return face_vector
 
     def draw_image_to_grid(self, imagePath, gridLayout):
         # Locate and adding images
