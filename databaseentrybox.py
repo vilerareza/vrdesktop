@@ -152,13 +152,7 @@ class DatabaseEntryBox(FloatLayout):
         self.imageReviewButton.disabled = False
         
     def create_vision_ai(self):
-        try:
-            from ai_model import AIModel
-            model = AIModel(recognition = True, model_location = "C:/Users/Reza Vilera/.deepface/loaded_model/vgg_model_loaded.h5")
-            print ('model created')
-            return model
-        except Exception as e:
-            print (f'Error on activating Vision AI {e}')
+        return App.get_running_app().manager.create_vision_ai()
 
     def add_text_on_widget(self, widget, text):
         widget.text = text
@@ -244,6 +238,9 @@ class DatabaseEntryBox(FloatLayout):
     def add_to_database(self, *args):
         # Run the function in databaseView object
         if self.isDataComplete:
+            # Add the new data to the database
+            App.get_running_app().manager.add_to_database(data_list = [self.newID, self.newFirstName, self.newLastName, self.newFaceVector, self.newFaceData])
+            # Show new data to the database list layout
             App.get_running_app().manager.mainTabs.databaseView.add_new_data(image_folder = self.previewImageLocation,
                                                                             data_list = [self.newID, self.newFirstName, self.newLastName, self.newFaceVector, self.newFaceData])
             self.reset_data()
