@@ -1,6 +1,5 @@
 import os
 import uuid
-import random
 import pickle
 from kivy.app import App
 from kivy.lang import Builder
@@ -9,15 +8,19 @@ from kivy.properties import ObjectProperty
 
 from tkinter import Tk, filedialog
 
-from cv2 import imread, imwrite
+from cv2 import imwrite
 
 Builder.load_file('databaseview.kv')
 
 class DatabaseView(BoxLayout):
 
-    datadict = {}
+    manager = ObjectProperty(None)
 
     dataListTempImageLocation = 'images/temp/datalist/'
+
+    def on_parent(self, *args):
+        print ('On Parent')
+        self.get_database()
 
     def add_to_list(self, image_folder, string_data_list): 
         # draw the new data to the database list box object 
@@ -37,15 +40,15 @@ class DatabaseView(BoxLayout):
             backgroundImage = ObjectProperty(None)
         '''
         # Retrieve data from database
-        database = App.get_running_app().manager.get_database()
+        faceDatabase = self.manager.get_facedatabase()
         dataID = selected_data.dataID
-        dataContent = database[dataID]
+        dataContent = faceDatabase[dataID]
         self.ids.database_info_box.display_data(data_id = dataID, data_content = dataContent)
 
     def check_id_exist(self, new_id):
-        database = App.get_running_app().manager.get_database()
+        faceDatabase = self.manager.get_facedatabase()
         print (f'CHECK ID: {new_id}')
-        for id in database.keys():
+        for id in faceDatabase.keys():
             print (id)
             if id == new_id:
                 print ('CHECK ID true')
@@ -54,15 +57,17 @@ class DatabaseView(BoxLayout):
         return False
 
     def save_database(self): 
-        database = App.get_running_app().manager.get_database()
-        if (len(database) > 0):
+        faceDatabase = self.manager.get_facedatabase()
+        if (len(faceDatabase) > 0):
             root = Tk()
             root.withdraw()
             filename = filedialog.asksaveasfilename(defaultextension='.pckl', filetypes= [('pickle files','*.pckl')])
             root.destroy()
             if filename:
                 with open(filename, 'wb') as file:
-                    pickle.dump(database, file)
+                    pickle.dump(faceDatabase, file)
+                # Serialize database location to file
+                self.manager.save_database_path(filename)
             else:
                 print("No data saved")
         else:
@@ -103,23 +108,30 @@ class DatabaseView(BoxLayout):
         root.destroy()
         if filename:
             # Backup current database first
-            database = App.get_running_app().manager.get_database()
-            database_backup = database.copy()
+            faceDatabase = self.manager.get_facedatabase()
+            faceDatabase_backup = faceDatabase.copy()
             # Clearing existing dataset
-            database.clear()
+            faceDatabase.clear()
             # Processing selected file
             file = open(filename, "rb")
             try:
-                database.update(pickle.load(file))
+                faceDatabase.update(pickle.load(file))
                 # Display database
-                self.display_database(database)
+                self.display_database(faceDatabase)
+                # Serialize database location to file
+                self.manager.save_database_path(filename)
             except Exception as e:
                 print(f"{e}: Failed loading dataset. Possible cause: wrong dataset file selected. Database restored")
-                database.update(database_backup)   # Restore database to previous state
+                faceDatabase.update(faceDatabase_backup)   # Restore database to previous state
                 # Display database
-                self.display_database()
+                self.display_database(faceDatabase)
             finally:
-                database_backup = None
+                faceDatabase_backup = None
         else:
             print("Selection canceled. No data loaded...")
             pass
+
+    def get_database(self):
+        # Get and show database from manager
+        faceDatabase = self.manager.get_facedatabase()
+        self.display_database(faceDatabase)

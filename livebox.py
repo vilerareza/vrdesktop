@@ -12,6 +12,8 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from audioconnection import AudioReceiver, AudioTransmitter
 from mylayoutwidgets import ColorFloatLayout
 
+from livestream import LiveStream
+
 Builder.load_file('livebox.kv')
 
 class LiveBox(MDFloatLayout, HoverBehavior):
@@ -35,10 +37,11 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     audioReceiver = None
     audioTransmitter = None
 
-    def __init__(self, model = None, deviceUrl = '', **kwargs):
+    def __init__(self, model = None, deviceUrl = '', face_database = None, **kwargs):
         super().__init__(**kwargs)
         self.deviceUrl = deviceUrl
-        self.set_live_stream (model) 
+        if model and face_database:
+            self.set_live_stream (model, face_database) 
         
     def on_enter(self, *args):
         self.show_controls()
@@ -46,8 +49,8 @@ class LiveBox(MDFloatLayout, HoverBehavior):
     def on_leave(self, *args):
         self.hide_controls()
 
-    def set_live_stream (self, model):
-        self.liveStream.aiModel = model
+    def set_live_stream (self, model, face_database):
+        self.liveStream.set_model_database(model, face_database)
 
     def start_live_stream (self):
         try:
@@ -84,8 +87,9 @@ class LiveBox(MDFloatLayout, HoverBehavior):
         target_size = ((self.liveStream.width * factor), (self.liveStream.height * factor))
         self.liveStream.size = target_size     
 
-    def capture_image(self):
-        self.liveStream.texture.save("test.png", flipped = False)
+    def capture_image(self, file_name = ''):
+        if file_name =='':
+            self.liveStream.texture.save("test.png", flipped = False)
 
     def show_controls(self):
         self.liveActionBar.opacity  = 0.7

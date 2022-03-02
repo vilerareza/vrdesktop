@@ -90,7 +90,7 @@ class AIModel():
     def extract_faces(self, detector_type, img, target_size = (224,224)):
         # Detect faces and get bounding boxes
         bboxes, img = self.detect_faces(detector_type, img)
-        if any(bboxes):
+        if np.any(bboxes):
             faces = []
             for box in bboxes:
                 x1, y1, width, height = box
@@ -113,7 +113,7 @@ class AIModel():
     def extract_primary_face(self, detector_type, image_path, target_size = (224,224)):
         # Detection
         img, box = self.detect_primary_face_from_file(detector_type, image_path)
-        if any(box):
+        if np.any(box):
             x1, y1, width, height = box
             x2, y2 = x1 + width, y1 + height
             # face data array

@@ -29,8 +29,6 @@ class Multiview(BoxLayout):
     selectionInterval = 4
     # Database
     db = ObjectProperty({'dbName': 'test.db', 'tableName': 'camera'})
-    # Vision AI Model
-    aiModel = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -148,11 +146,12 @@ class Multiview(BoxLayout):
             # Fill live box object list
             if deviceNeuralNet == 1:
                 # If device neural net is activated then activate the Vision AI
-                if not (self.aiModel):
-                    self.aiModel = self.create_vision_ai()
-                if self.aiModel:
+                aiModel = self.manager.create_vision_ai()
+                faceDatabase = self.manager.get_facedatabase()
+                if aiModel:
                     # Create livebox with detector and model
-                    self.liveBoxes.append(LiveBox(deviceUrl = deviceUrl, model = self.aiModel))
+                    print (f'MULTIVIEW faceDatabase = {len(faceDatabase)}')
+                    self.liveBoxes.append(LiveBox(deviceUrl = deviceUrl, model = aiModel, face_database = faceDatabase ))
                 else:
                     print ('Model not exist')
             else:
@@ -160,15 +159,6 @@ class Multiview(BoxLayout):
                 self.liveBoxes.append(LiveBox(deviceUrl = deviceUrl))
         # Add deviceIcon content to selection box
         self.add_deviceicon_to_selectionbox(item_list = self.deviceIcons, container = self.selectionBox)
-
-    def create_vision_ai(self):
-        try:
-            from ai_model import AIModel
-            model = AIModel(recognition = True, model_location = 'model/vromeo_ai_model.h5', classes_location = 'model/vromeo_ai_model_classes.npy')
-            print ('model created')
-            return model
-        except Exception as e:
-            print (f'Error on activating Vision AI {e}')
 
     def add_deviceicon_to_selectionbox(self, item_list, container):
         for item in item_list:

@@ -1,0 +1,78 @@
+<LogContentBox>
+
+    orientation : 'vertical'
+
+    BoxLayout:
+    # Upper container
+        id : upper_container
+        orientation : 'vertical'
+        size_hint : (1, 1.5)
+        canvas.before:
+            Color:
+                rgb: 0.3, 0.3, 0.3
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        FloatLayout:
+            id: upper_label_container
+            size_hint : (1, None)
+            height : dp (30)
+
+            Label:
+                text: 'Faces'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'center'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                center_x: upper_label_container.center_x
+                top: upper_label_container.top - dp(10)
+
+        FaceImageStack:
+        # The layout for displaying detected face images of selected id
+            myroot : root
+
+            id: face_image_stack
+            padding: [20]
+            spacing: 10
+
+            size_hint : (1, 1)
+
+
+    BoxLayout:
+    # Lower container
+        id : lower_container
+        orientation : 'vertical'
+        size_hint : (1, 1)
+        canvas.before:
+            Color:
+                rgb: 0.35, 0.35, 0.35
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        
+        FloatLayout:
+            id: lower_label_container
+            size_hint : (1, None)
+            height : dp (30)
+
+            Label:
+                text: 'Frame'
+                size_hint : (None, None)
+                size: dp(150), dp(20)
+                text_size : self.size
+                halign : 'center'
+                valign : 'middle'
+                font_size: 17
+                font_family: "arial"
+                center_x: lower_label_container.center_x
+                top: lower_label_container.top - dp(10)
+
+        FloatLayout:
+            id : frame_image_float
+            size_hint : (1, 1)
+                
+

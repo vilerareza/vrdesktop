@@ -22,6 +22,7 @@ class DatabaseEntryBox(FloatLayout):
     newFaceData = []    # New face data list
     newFaceVector = None # New face vector
 
+    manager = ObjectProperty(None)
     selectedPath = ''   # Selected image folder path
     selectFolderButton = ObjectProperty(None)
     imageReviewButton = ObjectProperty(None)
@@ -90,7 +91,7 @@ class DatabaseEntryBox(FloatLayout):
 
     def check_id_exist(self, new_id):
         # Execute function in databaseview module
-        return App.get_running_app().manager.mainTabs.databaseView.check_id_exist(new_id)
+        return self.manager.mainTabs.databaseView.check_id_exist(new_id)
 
     def get_entry(self, *args):
         isValid = True
@@ -239,9 +240,9 @@ class DatabaseEntryBox(FloatLayout):
         # Run the function in databaseView object
         if self.isDataComplete:
             # Add the new data to the database
-            App.get_running_app().manager.add_to_database(data_list = [self.newID, self.newFirstName, self.newLastName, self.newFaceVector, self.newFaceData])
+            self.manager.add_to_facedatabase(data_list = [self.newID, self.newFirstName, self.newLastName, self.newFaceVector, self.newFaceData])
             # Show new data to the database list layout
-            App.get_running_app().manager.mainTabs.databaseView.add_new_data(image_folder = self.previewImageLocation,
+            self.manager.mainTabs.databaseView.add_new_data(image_folder = self.previewImageLocation,
                                                                             data_list = [self.newID, self.newFirstName, self.newLastName, self.newFaceVector, self.newFaceData])
             self.reset_data()
         else:
